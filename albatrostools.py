@@ -56,12 +56,34 @@ def unpack_2_bit(data, num_channels):
     return pol0, pol1
     
 def unpack_4_bit(data, num_channels):
-    pass
+    pol0_bytes=data[:, 0::2]
+    pol1_bytes=data[:, 1::2]
+    real_pol0=numpy.right_shift(numpy.bitwise_and(pol0_bytes, 0xf0), 4)
+    imag_pol0=numpy.bitwise_and(pol0_bytes, 0x0f)
+    real_pol1=numpy.right_shift(numpy.bitwise_and(pol1_bytes, 0xf0), 4)
+    imag_pol1=numpy.bitwise_and(pol1_bytes, 0x0f)
+    
+    real_pol0[real_pol0>7]=real_pol0[real_pol0>7]-16
+    imag_pol0[imag_pol0>7]=imag_pol0[imag_pol0>7]-16
 
+    real_pol1[real_pol1>7]=real_pol1[real_pol1>7]-16
+    imag_pol1[imag_pol1>7]=imag_pol1[imag_pol1>7]-16
+
+    pol0=real_pol0+1J*imag_pol0
+    pol1=real_pol1+1J*imag_pol1
+
+    del real_pol0
+    del imag_pol0
+    del real_pol1
+    del imag_pol1
+
+    pol0=pol0.reshape(-1, num_channels)
+    pol1=pol1.reshape(-1, num_channels)
+    return pol0, pol1
+    
 def get_data(file_name):
     file_data=open(file_name, "r")
     data=numpy.fromfile(file_data, dtype=[("spec_num", ">I"), ("spectra", "1230B")])
     file_data.close()
-    print(data["spectra"].shape)
     spectra=data["spectra"].reshape(-1, 246)
     return data["spec_num"], spectra
