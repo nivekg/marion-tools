@@ -19,15 +19,49 @@ def unpack_1_bit(data, num_channels):
     imag_pol0[imag_pol1==0]=-1
     pol0=real_pol0+1J*imag_pol0
     pol1=real_pol1+1J*imag_pol1
+    del real_pol0
+    del imag_pol0
+    del real_pol1
+    del imag_pol1
     pol0=numpy.reshape(pol0, (-1, num_channels))
     pol1=numpy.reshape(pol1, (-1, num_channels))
     return pol0, pol1
     
-def unpack_2_bit(data):
-    pass
+def unpack_2_bit(data, num_channels):
+    real_pol0=numpy.asarray(numpy.right_shift(numpy.bitwise_and(data, 0xC0), 6), dtype="int8")
+    imag_pol0=numpy.asarray(numpy.right_shift(numpy.bitwise_and(data, 0x30), 4), dtype="int8")
+    real_pol1=numpy.asarray(numpy.right_shift(numpy.bitwise_and(data, 0x0C), 2), dtype="int8")
+    imag_pol0=numpy.asarray(numpy.bitwise_and(data, 0x03), dtype="int8")
 
+    real_pol0[real_pol0<=1]=real_pol0[real_pol0<=1]-2
+    real_pol0[real_pol0>=2]=real_pol0[real_pol0>=2]-1
+
+    imag_pol0[imag_pol0<=1]=imag_pol0[imag_pol0<=1]-2
+    imag_pol0[imag_pol0>=2]=imag_pol0[imag_pol0>=2]-1
+
+    real_pol1[real_pol1<=1]=real_pol1[real_pol1<=1]-2
+    real_pol1[real_pol1>=2]=real_pol1[real_pol1>=2]-1
+
+    imag_pol1[imag_pol1<=1]=imag_pol1[imag_pol1<=1]-2
+    imag_pol1[imag_pol1>=2]=imag_pol1[imag_pol1>=2]-1
+    
+    pol0=real_pol0+1J*imag_pol0
+    pol1=real_pol1+1J*imag_pol1
+    del real_pol0
+    del imag_pol0
+    del real_pol1
+    del imag_pol1
+    pol0=pol0.reshape(-1, num_channels)
+    pol1=pol1.reshape(-1, num_channels)
+    return pol0, pol1
+    
 def unpack_4_bit(data, num_channels):
     pass
 
-def read_header(file_object):
-    pass
+def get_data(file_name):
+    file_data=open(file_name, "r")
+    data=numpy.fromfile(file_data, dtype=[("spec_num", ">I"), ("spectra", "1230B")])
+    file_data.close()
+    print(data["spectra"].shape)
+    spectra=data["spectra"].reshape(-1, 246)
+    return data["spec_num"], spectra
