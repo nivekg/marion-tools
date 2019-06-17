@@ -42,6 +42,6 @@ if __name__=="__main__":
     pol0, pol1=albatrostools.unpack_4_bit(data, args.channels)
     
     for i in range(args.channels):
-        plot_4_bit_hist(pol0[:, i], pol1[:, 1], i)
+        plot_4_bit_hist(pol0[:, i], pol1[:, i], i)
 
         
