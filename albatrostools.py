@@ -1,4 +1,5 @@
 import numpy
+import struct
 
 def unpack_1_bit(data, num_channels):
     real_pol0_chan0=numpy.asarray(numpy.right_shift(numpy.bitwise_and(data, 0x80), 7), dtype="int8")
@@ -90,11 +91,33 @@ def correlate(pol0, pol1):
         for j in range(i, 2):
             pols["pol%d%d"%(i, j)]=data[i]*numpy.conj(data[j])
     return pols
-    
-def get_data(file_name, channels, bytes_per_packet, items=-1):
+
+def get_header(file_name):
     file_data=open(file_name, "r")
-    data=numpy.fromfile(file_data, count=items, dtype=[("spec_num", ">I"), ("spectra", "%dB"%(bytes_per_packet-4))])
+    header_bytes=struct.unpack(">Q", file_data.read(8))[0]
+    header_raw=file_data.read(header_bytes)
+    header_data=numpy.frombuffer(header_raw, dtype=[("bytes_per_packet", ">Q"), ("length_channels", ">Q"), ("spectra_per_packet", ">Q"), ("bit_mode", ">Q"), ("have_trimble", ">Q"), ("channels", ">%dQ"%(int((header_bytes-80)/8))), ("gps_week", ">Q"), ("gps_seconds", ">Q"), ("gps_lat", ">q"), ("gps_lon", ">q"), ("gps_elev", ">q")])
     file_data.close()
-    #mem_data=numpy.memmap(data, dtype=[("spec_num", ">I"), ("spectra", "%dB"%(bytes_per_packet-4))])
-    spectra=data["spectra"].reshape(-1, channels)
-    return data["spec_num"], spectra
+    header={"header_bytes":8+header_bytes,
+            "bytes_per_packet":header_data["bytes_per_packet"][0],
+            "length_channels":header_data["length_channels"][0],
+            "spectra_per_packet":header_data["spectra_per_packet"][0],
+            "bit_mode":header_data["bit_mode"][0],
+            "have_trimble":header_data["have_trimble"][0],
+            "channels":header_data["channels"][0],
+            "gps_week":header_data["gps_week"][0],
+            "gps_seconds":header_data["gps_seconds"][0],
+            "gps_latitude":header_data["gps_lat"][0],
+            "gps_longitude":header_data["gps_lon"][0],
+            "gps_elevation":header_data["gps_elev"][0]}
+    print("Done reading header")
+    return header
+
+def get_data(file_name, items=-1):
+    header=get_header(file_name)
+    file_data=open(file_name, "r")
+    file_data.seek(8+header["header_bytes"])
+    data=numpy.fromfile(file_data, count=items, dtype=[("spec_num", ">I"), ("spectra", "%dB"%(header["bytes_per_packet"]-4))])
+    file_data.close()
+    spectra=data["spectra"].reshape(-1, header["length_channels"])
+    return header, data["spec_num"], spectra
