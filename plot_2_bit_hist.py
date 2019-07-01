@@ -11,7 +11,6 @@ def plot_2_bit_hist(pol0, pol1, channel):
     axs1=fig.add_subplot(221)
     axs1.hist(numpy.real(pol0), bins=numpy.arange(-2.25, 3, 1.25), edgecolor='black', linewidth=1.2)
     axs1.title.set_text("Real Pol0")
-    axs1.tick_params()
     axs1.set_xticks(numpy.arange(-2.25, 3, 1.25))
     axs1.set_xticklabels(range(-2, 3, 1))
     axs2=fig.add_subplot(222)
@@ -29,20 +28,17 @@ def plot_2_bit_hist(pol0, pol1, channel):
     axs4.title.set_text("Imag Pol1")
     axs4.set_xticks(numpy.arange(-2.25, 3, 1.25))
     axs4.set_xticklabels(range(-2, 3, 1))
-    pyplot.savefig("chan_"+str(channel)+"_2_bit_hist.png")
+    pyplot.savefig(outdir+"/"+"chan_"+str(channel)+"_2_bit_hist.png")
     pyplot.clf()
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument("datafile", type=str, help="data file for histrogram")
-    parser.add_argument("-c", "--channels", type=int, help="Number of channels")
-    parser.add_argument("-b", "--bytes_per_packet", type=int, help="NUmber of bytes per packet")
+    parser.add_argument("-o", "--outdir", type=str, help="directory to save plots")
     args=parser.parse_args()
 
-    spec_num, data=albatrostools.get_data(args.datafile, args.channels, args.bytes_per_packet)
-    pol0, pol1=albatrostools.unpack_2_bit(data, args.channels)
+    header, spec_num, data=albatrostools.get_data(args.datafile, -1)
+    pol0, pol1=albatrostools.unpack_2_bit(data, header["length_channels"])
     
-    for i in range(args.channels):
-        plot_2_bit_hist(pol0[:, i], pol1[:, i], i)
-
-        
+    for i in range(header["channels"]):
+        plot_2_bit_hist(pol0[:, i], pol1[:, i], i, args.outdir)
