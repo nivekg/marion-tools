@@ -111,6 +111,10 @@ def get_header(file_name):
             "gps_longitude":header_data["gps_lon"][0],
             "gps_elevation":header_data["gps_elev"][0]}
     print("Done reading header")
+    if header["bit_mode"]==4:
+        header["channels"]=header["channels"][::2]
+        header["length_channels"]=int(header["length_channels"]/2)
+        print(header["length_channels"])
     return header
 
 def get_data(file_name, items=-1):
