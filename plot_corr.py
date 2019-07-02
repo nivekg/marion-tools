@@ -4,6 +4,7 @@ matplotlib.use("Agg")
 from matplotlib import pyplot
 import numpy
 import argparse
+import os
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
@@ -11,15 +12,22 @@ if __name__=="__main__":
     parser.add_argument("-o", "--outdir", type=str, help="directory to save plots")
     args=parser.parse_args()
 
+    if not os.path.isdir(args.outdir):
+        print("making directory: "+args.outdir)
+        os.mkdir(args.outdir)
+
     header, spec_num, data=albatrostools.get_data(args.datafile, -1)
     print(header)
     print("finished reading file")
     
     if header["bit_mode"]==1:
+        print("Doing one bit unpack")
         pol0, pol1=albatrostools.unpack_1_bit(data, header["length_channels"])
     if header["bit_mode"]==2:
+        print("Doing two bit unpack")
         pol0, pol1=albatrostools.unpack_2_bit(data, header["length_channels"])
     if header["bit_mode"]==4:
+        print("Doing four bit unpack")
         pol0, pol1=albatrostools.unpack_4_bit(data, header["length_channels"])
         
     print("finished unpacking data")
