@@ -64,17 +64,25 @@ if __name__=="__main__":
     parser.add_argument("-o", "--outdir", type=str, help="directory to save plots")
     args=parser.parse_args()
 
-    header, spec_num, data=albatrostools.get_data(args.datafile, -1)
-    pol0, pol1=albatrostools.unpack_4_bit(data, header["length_channels"])
+    header, data=albatrostools.get_data(args.datafile, -1)
+
+    print(header)
 
     if not os.path.isdir(args.outdir):
         print("making directory: "+args.outdir)
         os.mkdir(args.outdir)
+
+    numpy.set_printoptions(threshold=numpy.inf)
+    print(data["spectrum_number"])
+
+    pyplot.plot(data["spectrum_number"])
+    pyplot.savefig(args.outdir+"/spectrum_number.png")
+    pyplot.clf()
     
     for index, chan in enumerate(header["channels"]):
         if header["bit_mode"]==2:
-            plot_2_bit_hist(pol0[:, index], pol1[:, index], chan, args.outdir)
+            plot_2_bit_hist(data["pol0"][:, index], data["pol1"][:, index], chan, args.outdir)
         if header["bit_mode"]==4:
-            plot_4_bit_hist(pol0[:, index], pol1[:, index], chan, args.outdir)
+            plot_4_bit_hist(data["pol0"][:, index], data["pol1"][:, index], chan, args.outdir)
 
         

@@ -7,6 +7,7 @@ import argparse
 import os
 
 if __name__=="__main__":
+    numpy.set_printoptions(threshold=numpy.inf)
     parser=argparse.ArgumentParser()
     parser.add_argument("datafile", type=str, help="data file for histrogram")
     parser.add_argument("-o", "--outdir", type=str, help="directory to save plots")
@@ -16,26 +17,18 @@ if __name__=="__main__":
         print("making directory: "+args.outdir)
         os.mkdir(args.outdir)
 
-    header, spec_num, data=albatrostools.get_data(args.datafile, -1)
+    header, data=albatrostools.get_data(args.datafile, 300000)
     print(header)
     print("finished reading file")
+  
+    print(data["spectrum_number"])
     
-    if header["bit_mode"]==1:
-        print("Doing one bit unpack")
-        pol0, pol1=albatrostools.unpack_1_bit(data, header["length_channels"])
-    if header["bit_mode"]==2:
-        print("Doing two bit unpack")
-        pol0, pol1=albatrostools.unpack_2_bit(data, header["length_channels"])
-    if header["bit_mode"]==4:
-        print("Doing four bit unpack")
-        pol0, pol1=albatrostools.unpack_4_bit(data, header["length_channels"])
-        
-    print("finished unpacking data")
-    
-    pols=albatrostools.correlate(pol0, pol1)
+    pyplot.plot(data["spectrum_number"])
+    pyplot.savefig(args.outdir+"/spectrum_number.png")
+    pyplot.clf()
+  
+    pols=albatrostools.correlate(data["pol0"], data["pol1"])
     print("just after correlate")
-    del pol0
-    del pol1
     pol00=numpy.absolute(pols["pol00"])**2
     pol11=numpy.absolute(pols["pol11"])**2
     pol01=pols["pol01"]
