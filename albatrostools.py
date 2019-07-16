@@ -1,7 +1,7 @@
 import numpy
 import struct
 import datetime
-import scio
+#import scio
 
 def unpack_1_bit(data, num_channels):
     real_pol0_chan0=numpy.asarray(numpy.right_shift(numpy.bitwise_and(data, 0x80), 7), dtype="int8")
@@ -112,7 +112,7 @@ def get_data(file_name, items=-1):
     header=get_header(file_name)
     file_data=open(file_name, "r")
     file_data.seek(8+header["header_bytes"])
-    data=numpy.fromfile(file_data, count=items, dtype=[("spec_num", "<I"), ("spectra", "%dB"%(header["bytes_per_packet"]-4))])
+    data=numpy.fromfile(file_data, count=items, dtype=[("spec_num", ">I"), ("spectra", "%dB"%(header["bytes_per_packet"]-4))])
     file_data.close()
     if header["bit_mode"]==1:
         raw_spectra=data["spectra"].reshape(-1, header["length_channels"]/2)
