@@ -111,7 +111,7 @@ def get_header(file_name):
 def get_data(file_name, items=-1):
     header=get_header(file_name)
     file_data=open(file_name, "r")
-    file_data.seek(8+header["header_bytes"])
+    file_data.seek(header["header_bytes"])
     data=numpy.fromfile(file_data, count=items, dtype=[("spec_num", ">I"), ("spectra", "%dB"%(header["bytes_per_packet"]-4))])
     file_data.close()
     if header["bit_mode"]==1:
@@ -123,9 +123,8 @@ def get_data(file_name, items=-1):
     if header["bit_mode"]==4:
         raw_spectra=data["spectra"].reshape(-1, header["length_channels"])
         pol0, pol1=unpack_4_bit(raw_spectra, header["length_channels"])
-    # all_spec_num=[]
-    # for i in range(header["spectra_per_packet"]):
-    #     all_spec_num.append(data["spec_num"]+i)
-    # spec_num=numpy.ravel(numpy.column_stack(tuple(all_spec_num)))
-    spec_num=data["spec_num"]
+    all_spec_num=[]
+    for i in range(header["spectra_per_packet"]):
+        all_spec_num.append(data["spec_num"]+i)
+    spec_num=numpy.ravel(numpy.column_stack(tuple(all_spec_num)))
     return header, {"spectrum_number":spec_num, "pol0":pol0, "pol1":pol1}
