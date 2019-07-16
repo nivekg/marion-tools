@@ -79,12 +79,12 @@ if __name__=="__main__":
         if opts.dsfac is True:
             mean_pol00 = nm.mean(nm.abs(data['pol0'])**2, axis=0)
             mean_pol11 = nm.mean(nm.abs(data['pol1'])**2, axis=0)
-            mean_mag = nm.mean(nm.abs(corr)**2, axis=0)
+            mean_mag = nm.mean(nm.abs(corr), axis=0)
             mean_phase = nm.mean(nm.angle(corr), axis=0)
         else:
             mean_pol00 = downsample2d(nm.abs(data['pol0'])**2, opts.dsfac)
             mean_pol11 = downsample2d(nm.abs(data['pol1'])**2, opts.dsfac)
-            mean_mag = downsample2d(nm.abs(corr)**2, opts.dsfac)
+            mean_mag = downsample2d(nm.abs(corr), opts.dsfac)
             mean_phase = downsample2d(nm.angle(corr), opts.dsfac)
         if pol01_mag is None:
             pol00 = mean_pol00.copy()
