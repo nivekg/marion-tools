@@ -18,6 +18,7 @@ def logs2ctimes(logdir):
         log_ctimes.append(ctime)
     # Sort by ctimes
     log_ctimes, log_files = zip(*sorted(zip(log_ctimes, log_files)))
+    log_files = nm.asarray(log_files)
     log_ctimes = nm.asarray(log_ctimes)
     return log_files, log_ctimes
 
@@ -69,5 +70,8 @@ if __name__ == '__main__':
         print txt.strip()
         txt = os.popen('grep "Channel coeffs" '+config_logfiles[ind]+' | cut -d " " -f6-').readlines()[0]
         print txt.strip()
-        txt = os.popen('grep "ADC bits" '+config_logfiles[ind]+' | cut -d " " -f4-').readlines()[0]
-        print txt.strip()
+        txt = os.popen('grep "ADC bits" '+config_logfiles[ind]+' | cut -d " " -f4-').readlines()
+        if len(txt) != 0:
+            print txt[0].strip()
+        else:
+            print 'ADC bits used: no information found'
