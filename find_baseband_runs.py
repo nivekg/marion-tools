@@ -47,6 +47,8 @@ if __name__ == '__main__':
                       help='Start date in format YYYYMMDD [default: %default]')
     parser.add_option('-S', '--stop', dest='stop', type='str', default=None,
                       help='Stop date in format YYYYMMDD [default: %default]')
+    parser.add_option('-b', '--bits', dest='bits', type='int', default=None,
+                      help='Select runs with only specified number of bits [default: %default]')
     parser.add_option('-e', '--events', dest='events_file', type='str',
                       default='events.txt',
                       help='Events file [default: %default]')
@@ -122,7 +124,6 @@ if __name__ == '__main__':
     baseband_logfiles_ctimes = baseband_logfiles_ctimes[inds]
 
     # Print all the things in reverse chronological order
-    s = re.compile(r'(\d+)\:(\d+)$')
     for ind in range(len(baseband_logfiles))[-1::-1]:
         # Find the closest system state
         sys_state = 'unknown'
@@ -137,7 +138,18 @@ if __name__ == '__main__':
             config_logfile = None
         else:
             config_logfile = config_logfiles[ii[-1]]
-        
+
+        # Find number of bits used, see if the human is interested or not
+        if opts.bits is not None:
+            s = re.compile(r'(\d)$')
+            btxt = os.popen('grep "Baseband bits" '+baseband_logfiles[ind]+' | cut -d " " -f6-').readlines()[0]
+            if s.search(btxt):
+                b = int(s.search(btxt).groups()[0])
+                # ...this is super hacky, and could be made way more efficient
+                # if we do a top level grep early on.  But I'm tired and lazy.
+                if b != opts.bits:
+                    continue
+
         print '============================================='
         print baseband_logfiles[ind]
         print 'System state:', sys_state
@@ -153,6 +165,7 @@ if __name__ == '__main__':
         else:
             cctxt = os.popen('grep "Channel coeffs" '+config_logfile+' | cut -d " " -f6-').readlines()[0]
             print cctxt.strip()
+        s = re.compile(r'(\d+)\:(\d+)$')
         if s.search(ctxt):
             c1 = int(s.search(ctxt).groups()[0])
             c2 = int(s.search(ctxt).groups()[1])
