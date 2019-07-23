@@ -82,6 +82,13 @@ def correlate(pol0, pol1):
             pols["pol%d%d"%(i, j)]=data[i]*numpy.conj(data[j])
     return pols
 
+def accumulate(data, acc_len):
+    spectra=numpy.zeros((data.shape[0]/acc_len, data.shape[1]))
+    for i in range((data.shape[0]/acc_len)-1):
+        print(i)
+        spectra[i]=numpy.mean(data[i*acc_len:(i+1)*acc_len], axis=0)
+    return spectra
+
 def get_header(file_name):
     file_data=open(file_name, "r")
     header_bytes=struct.unpack(">Q", file_data.read(8))[0]
