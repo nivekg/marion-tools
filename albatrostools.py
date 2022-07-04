@@ -90,7 +90,7 @@ def accumulate(data, acc_len):
     return spectra
 
 def get_header(file_name):
-    file_data=open(file_name, "r")
+    file_data=open(file_name, "rb")
     header_bytes=struct.unpack(">Q", file_data.read(8))[0]
     header_raw=file_data.read(header_bytes)
     header_data=numpy.frombuffer(header_raw, dtype=[("bytes_per_packet", ">Q"), ("length_channels", ">Q"), ("spectra_per_packet", ">Q"), ("bit_mode", ">Q"), ("have_trimble", ">Q"), ("channels", ">%dQ"%(int((header_bytes-80)/8))), ("gps_week", ">Q"), ("gps_seconds", ">Q"), ("gps_lat", ">d"), ("gps_lon", ">d"), ("gps_elev", ">d")])
@@ -117,7 +117,7 @@ def get_header(file_name):
 
 def get_data(file_name, items=-1):
     header=get_header(file_name)
-    file_data=open(file_name, "r")
+    file_data=open(file_name, "rb")
     file_data.seek(header["header_bytes"])
     data=numpy.fromfile(file_data, count=items, dtype=[("spec_num", ">I"), ("spectra", "%dB"%(header["bytes_per_packet"]-4))])
     file_data.close()
